@@ -1,0 +1,8 @@
+services:
+  streamlit:
+    container_name: "PeSobrinho_barber_shop_report"
+    build:
+      dockerfile: ./Dockerfile
+      context: ./
+    ports:
+      - "8501:8501"
