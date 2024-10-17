@@ -6,9 +6,6 @@ from sqlalchemy import create_engine
 from datetime import datetime
 import plotly.express as px
 
-import sys
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
 from configs import config
 
 # Connection configuration
@@ -24,12 +21,12 @@ engine = create_engine(f'postgresql+psycopg2://{user}:{password}@{host}:{port}/{
 
 # Data queries
 queries_paths = [
-    '../sql/select_distinct_funcionarios.sql', 
-    '../sql/select_distinct_clientes.sql',
-    '../sql/select_distinct_pagamento.sql',
-    '../sql/select_distinct_servico.sql',
-    '../sql/select_distinct_dat_servico.sql',
-    '../sql/select_agregacao_vl_qtd.sql'
+    './sql/select_distinct_funcionarios.sql', 
+    './sql/select_distinct_clientes.sql',
+    './sql/select_distinct_pagamento.sql',
+    './sql/select_distinct_servico.sql',
+    './sql/select_distinct_dat_servico.sql',
+    './sql/select_agregacao_vl_qtd.sql'
     ]
 
 data_frames = {}
