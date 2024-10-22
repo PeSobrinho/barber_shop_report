@@ -84,18 +84,19 @@ ordem_dias_semana = ['Segunda-feira', 'Terça-feira', 'Quarta-feira',
 ordem_dias_semana_serie = pd.Series(range(len(ordem_dias_semana)), index=ordem_dias_semana)
 
 
-
 # Dashboard
 st.set_page_config(layout='wide')
 
-col1 = st.columns(1)
-col2, col3, col4 = st.columns(3)
-col5, col6 = st.columns(2)
-col7, col8 = st.columns(2)
+st.title('Análise de atendimentos: Barbearia Ponto do Corte')
 
+paginas = ['Visão Geral', 'Avaliações', 'Clientes']
 
 ## Filters
 with st.sidebar:
+
+    st.title('Navegação')
+    pagina = st.selectbox('Selecione a página: ', paginas)
+
     st.title('Filtros')
     periodo_selecionado = st.date_input('Período: ', [min_date, max_date], min_value = min_date, max_value = max_date)
     funcionarios_selecionados = st.multiselect('Funcionários: ', df_funcionarios['nm_funcionario'])
@@ -122,54 +123,208 @@ if pagamentos_selecionados:
 if clientes_selecionados:
     df_agg_vl_qtd_filtred = df_agg_vl_qtd_filtred[df_agg_vl_qtd_filtred['nm_cliente'].isin(clientes_selecionados)]
 
-## Charts agg vl
-df_agg_vl_comp = df_agg_vl_qtd_filtred.groupby('dat_comp')['total_vl_servico'].sum().reset_index()
-fig_agg_vl_comp = px.line(df_agg_vl_comp, x='dat_comp', y='total_vl_servico', markers='o')
-col1[0].plotly_chart(fig_agg_vl_comp)
+## Métricas e gráficos
+def pagina_geral():
+    st.title('Visão geral dos atendimentos')
 
-df_agg_vl_mes = df_agg_vl_qtd_filtred.groupby('nome_mes')['total_vl_servico'].sum().reset_index()
-df_agg_vl_mes['ordem_mes'] = df_agg_vl_mes['nome_mes'].map(ordem_meses_serie)
-df_agg_vl_mes = df_agg_vl_mes.sort_values('ordem_mes')
-fig_agg_vl_mes = px.line(df_agg_vl_mes, x='nome_mes', y='total_vl_servico')
-col2.plotly_chart(fig_agg_vl_mes)
+    col0, col00, col000 = st.columns(3)
+    col1 = st.columns(1)
+    col2, col3, col4 = st.columns(3)
+    col5, col6 = st.columns(2)
+    col7, col8 = st.columns(2)
 
-df_agg_vl_semana = df_agg_vl_qtd_filtred.groupby('nome_dia_semana')['total_vl_servico'].sum().reset_index()
-df_agg_vl_semana['ordem_semana'] = df_agg_vl_semana['nome_dia_semana'].map(ordem_dias_semana_serie)
-df_agg_vl_semana = df_agg_vl_semana.sort_values('ordem_semana')
-fig_agg_vl_semana = px.line(df_agg_vl_semana, x='nome_dia_semana', y='total_vl_servico')
-col3.plotly_chart(fig_agg_vl_semana)
+    ### Total de atendimentos
+    total_atendimentos = df_agg_vl_qtd_filtred['total_servicos'].sum()
+    col0.metric('Total de atendimentos', f'{total_atendimentos:,}')
 
-df_agg_vl_dia = df_agg_vl_qtd_filtred.groupby('dia')['total_vl_servico'].sum().reset_index()
-df_agg_vl_dia = df_agg_vl_dia.sort_values('dia')
-fig_agg_vl_dia = px.line(df_agg_vl_dia, x='dia', y='total_vl_servico')
-col4.plotly_chart(fig_agg_vl_dia)
+    ### Total faturado
+    total_vl = df_agg_vl_qtd_filtred['total_vl_servico'].sum()
+    col00.metric('Total faturado', f'R$ {total_vl:,.2f}')
 
-df_agg_vl_func = df_agg_vl_qtd_filtred.groupby('nm_funcionario')['total_vl_servico'].sum().reset_index()
-fig_agg_vl_funcionario = px.bar(df_agg_vl_func, y='nm_funcionario', x='total_vl_servico', orientation='h')
-fig_agg_vl_funcionario.update_layout(yaxis = {'categoryorder':'total ascending'})
-col5.plotly_chart(fig_agg_vl_funcionario)
+    ### Ticket médio
+    tckt_medio = total_vl/total_atendimentos if total_atendimentos > 0 else 0
+    col000.metric('Ticket médio', f'R$ {tckt_medio:,.2f}')
 
-df_agg_vl_serv = df_agg_vl_qtd_filtred.groupby('tp_servico')['total_vl_servico'].sum().reset_index()
-fig_agg_vl_servico = px.bar(df_agg_vl_serv, y='tp_servico', x='total_vl_servico', orientation='h')
-fig_agg_vl_servico.update_layout(yaxis = {'categoryorder':'total ascending'})
-col6.plotly_chart(fig_agg_vl_servico)
+    ### Evolução da total de atendimentos
+    df_agg_vl_comp = df_agg_vl_qtd_filtred.groupby('dat_comp')['total_servicos'].sum().reset_index()
+    fig_agg_vl_comp = px.line(df_agg_vl_comp, x='dat_comp', y='total_servicos', markers='o')
+    fig_agg_vl_comp.update_layout(
+        title = 'Evolução da total de atendimentos',
+        xaxis_title = 'Competência',
+        yaxis_title = 'Atendimentos'
+    )
+    col1[0].plotly_chart(fig_agg_vl_comp)
 
-df_agg_vl_pg = df_agg_vl_qtd_filtred.groupby('tp_pagamento')['total_vl_servico'].sum().reset_index()
-fig_agg_vl_pagamento = px.bar(df_agg_vl_pg, y='tp_pagamento', x='total_vl_servico', orientation='h')
-fig_agg_vl_pagamento.update_layout(yaxis = {'categoryorder':'total ascending'})
-col7.plotly_chart(fig_agg_vl_pagamento)
+    ### Total de atendimentos por mês
+    df_agg_vl_mes = df_agg_vl_qtd_filtred.groupby('nome_mes')['total_servicos'].sum().reset_index()
+    df_agg_vl_mes['ordem_mes'] = df_agg_vl_mes['nome_mes'].map(ordem_meses_serie)
+    df_agg_vl_mes = df_agg_vl_mes.sort_values('ordem_mes')
+    fig_agg_vl_mes = px.bar(df_agg_vl_mes, x='nome_mes', y='total_servicos', text='total_servicos')
+    fig_agg_vl_mes.update_traces(texttemplate='%{text}', textposition='outside')
+    fig_agg_vl_mes.update_layout(
+        title = 'Total de atendimentos por mês',
+        xaxis_title = 'Mês',
+        yaxis_title = 'Atendimentos'
+    )
+    col2.plotly_chart(fig_agg_vl_mes)
 
-df_agg_vl_cl = df_agg_vl_qtd_filtred.groupby('nm_cliente')['total_vl_servico'].sum().reset_index()
-df_agg_vl_cl = df_agg_vl_cl.sort_values('total_vl_servico', ascending = False).head(5)
-fig_agg_vl_cliente = px.bar(df_agg_vl_cl, y='nm_cliente', x='total_vl_servico', orientation='h')
-fig_agg_vl_cliente.update_layout(yaxis = {'categoryorder':'total ascending'})
-col8.plotly_chart(fig_agg_vl_cliente)
+    ### Total de atendimentos por dia da semana
+    df_agg_vl_semana = df_agg_vl_qtd_filtred.groupby('nome_dia_semana')['total_servicos'].sum().reset_index()
+    df_agg_vl_semana['ordem_semana'] = df_agg_vl_semana['nome_dia_semana'].map(ordem_dias_semana_serie)
+    df_agg_vl_semana = df_agg_vl_semana.sort_values('ordem_semana')
+    fig_agg_vl_semana = px.bar(df_agg_vl_semana, x='nome_dia_semana', y='total_servicos', text='total_servicos')
+    fig_agg_vl_semana.update_traces(texttemplate='%{text}', textposition='outside')
+    fig_agg_vl_semana.update_layout(
+        title = 'Total de atendimentos por dia da semana',
+        xaxis_title = 'Dia da semana',
+        yaxis_title = 'Atendimentos'
+    )
+    col3.plotly_chart(fig_agg_vl_semana)
 
-# Display the filtered DataFrame
-st.write(df_agg_vl_qtd_filtred)
-#st.write(fig_agg_vl_funcionario)
-#st.write(fig_agg_vl_servico)
-#st.write(fig_agg_vl_pagamento)
-#st.write(fig_agg_vl_cliente)
+    ### Total de atendimentos por dia do mês
+    df_agg_vl_dia = df_agg_vl_qtd_filtred.groupby('dia')['total_servicos'].sum().reset_index()
+    df_agg_vl_dia = df_agg_vl_dia.sort_values('dia')
+    fig_agg_vl_dia = px.bar(df_agg_vl_dia, x='dia', y='total_servicos', text='total_servicos')
+    fig_agg_vl_dia.update_traces(texttemplate='%{text}', textposition='outside')
+    fig_agg_vl_dia.update_layout(
+        title = 'Total de atendimentos por dia do mês',
+        xaxis_title = 'Dia do mês',
+        yaxis_title = 'Atendimentos'
+    )
+    col4.plotly_chart(fig_agg_vl_dia)
+
+    ### Total de atendimentos por funcionário
+    df_agg_vl_func = df_agg_vl_qtd_filtred.groupby('nm_funcionario')['total_servicos'].sum().reset_index()
+    fig_agg_vl_funcionario = px.bar(df_agg_vl_func, y='nm_funcionario', x='total_servicos', orientation='h', text='total_servicos')
+    fig_agg_vl_funcionario.update_traces(texttemplate='%{text}', textposition='outside')
+    fig_agg_vl_funcionario.update_layout(
+        title = 'Total de atendimentos por funcionário',
+        yaxis_title = 'Funcionário',
+        xaxis_title = 'Atendimentos',
+        yaxis = {'categoryorder':'total ascending'}
+    )
+    col5.plotly_chart(fig_agg_vl_funcionario)
+
+    ### Total de atendimentos por tipo de serviço
+    df_agg_vl_serv = df_agg_vl_qtd_filtred.groupby('tp_servico')['total_servicos'].sum().reset_index()
+    fig_agg_vl_servico = px.bar(df_agg_vl_serv, y='tp_servico', x='total_servicos', orientation='h', text='total_servicos')
+    fig_agg_vl_servico.update_traces(texttemplate='%{text}', textposition='outside')
+    fig_agg_vl_servico.update_layout(
+        title = 'Total de atendimentos por tipo de serviço',
+        yaxis_title = 'Serviço',
+        xaxis_title = 'Atendimentos',
+        yaxis = {'categoryorder':'total ascending'}
+    )
+    col6.plotly_chart(fig_agg_vl_servico)
+
+    ### Total de atendimentos por tipo de pagamento
+    df_agg_vl_pg = df_agg_vl_qtd_filtred.groupby('tp_pagamento')['total_servicos'].sum().reset_index()
+    fig_agg_vl_pagamento = px.bar(df_agg_vl_pg, y='tp_pagamento', x='total_servicos', orientation='h', text='total_servicos')
+    fig_agg_vl_pagamento.update_traces(texttemplate='%{text}', textposition='outside')
+    fig_agg_vl_pagamento.update_layout(
+        title = 'Total de atendimentos por tipo de pagamento',
+        yaxis_title = 'Pagamento',
+        xaxis_title = 'Atendimentos',
+        yaxis = {'categoryorder':'total ascending'}
+    )
+    col7.plotly_chart(fig_agg_vl_pagamento)
+
+    df_agg_vl_cl = df_agg_vl_qtd_filtred.groupby('nm_cliente')['total_servicos'].sum().reset_index()
+    df_agg_vl_cl = df_agg_vl_cl.sort_values('total_servicos', ascending = False).head(5)
+    fig_agg_vl_cliente = px.bar(df_agg_vl_cl, y='nm_cliente', x='total_servicos', orientation='h', text='total_servicos')
+    fig_agg_vl_cliente.update_traces(texttemplate='%{text}', textposition='outside')
+    fig_agg_vl_cliente.update_layout(
+        title = 'Top 5 clientes mais atendidos',
+        yaxis_title = 'Cliente',
+        xaxis_title = 'Atendimentos',
+        yaxis = {'categoryorder':'total ascending'}
+    )
+    col8.plotly_chart(fig_agg_vl_cliente)
+
+    # Display the filtered DataFrame
+    st.write('Analítico')
+    st.write(df_agg_vl_qtd_filtred)
+    
+def pagina_avaliacoes():
+    st.title('Análise de avaliações')
+
+    col0, col00 = st.columns(2)
+    col000 = st.columns(1)
+    col1, col2 = st.columns(2)
+    col3, col4 = st.columns(2)
+
+    total_avaliacoes = df_agg_vl_qtd_filtred['av_servico'].count()
+    col0.metric('Serviços avaliados: ', f'{total_avaliacoes:,}')
+
+    media_avaliacoes = df_agg_vl_qtd_filtred['av_servico'].mean()
+    col00.metric('Avaliação média dos estabelicimento: ', f'{media_avaliacoes:,.2f}')
+
+    df_media_tempo = df_agg_vl_qtd_filtred.groupby('dat_comp')['av_servico'].mean().reset_index()
+    fig_media_tempo = px.line(df_media_tempo, x='dat_comp', y='av_servico', markers='o')
+    fig_media_tempo.update_layout(
+        title = 'Evolução da satisfação',
+        xaxis_title = 'Competência',
+        yaxis_title = 'Média das avaliações'
+    )
+    col000[0].plotly_chart(fig_media_tempo)
+
+    df_media_funcionario = df_agg_vl_qtd_filtred.groupby('nm_funcionario')['av_servico'].mean().reset_index()
+    fig_media_funcionario = px.bar(df_media_funcionario, y = 'nm_funcionario', x = 'av_servico', orientation= 'h', text = 'av_servico')
+    fig_media_funcionario.update_traces(texttemplate='%{text:.2f}', textposition='outside')
+    fig_media_funcionario.update_layout(
+        title = 'Avaliação média por funcionário',
+        yaxis_title = 'Funcionário',
+        xaxis_title = 'Média das avaliações',
+        yaxis = {'categoryorder':'total ascending'}
+    )
+    col1.plotly_chart(fig_media_funcionario)
+
+    df_media_servico = df_agg_vl_qtd_filtred.groupby('tp_servico')['av_servico'].mean().reset_index()
+    fig_media_servico = px.bar(df_media_servico, y = 'tp_servico', x = 'av_servico', orientation= 'h', text = 'av_servico')
+    fig_media_servico.update_traces(texttemplate='%{text:.2f}', textposition='outside')
+    fig_media_servico.update_layout(
+        title = 'Avaliação média por serviço',
+        yaxis_title = 'Serviço',
+        xaxis_title = 'Média das avaliações',
+        yaxis = {'categoryorder':'total ascending'}
+    )
+    col2.plotly_chart(fig_media_servico)
+
+    df_media_cliente = df_agg_vl_qtd_filtred.groupby('nm_cliente')['av_servico'].mean().reset_index()
+    df_media_cliente = df_media_cliente.sort_values('av_servico', ascending = True).head(5)
+    fig_media_cliente = px.bar(df_media_cliente, y = 'nm_cliente', x = 'av_servico', orientation= 'h', text = 'av_servico')
+    fig_media_cliente.update_traces(texttemplate='%{text:.2f}', textposition='outside')
+    fig_media_cliente.update_layout(
+        title = 'Top 5 clientes mais insatisfeitos',
+        yaxis_title = 'Cliente',
+        xaxis_title = 'Média das avaliações',
+        yaxis = {'categoryorder':'total ascending'}
+    )
+    col3.plotly_chart(fig_media_cliente)
+
+    df_media_cliente2 = df_agg_vl_qtd_filtred.groupby('nm_cliente')['av_servico'].mean().reset_index()
+    df_media_cliente2 = df_media_cliente2.sort_values('av_servico', ascending = False).head(5)
+    fig_media_cliente2 = px.bar(df_media_cliente2, y = 'nm_cliente', x = 'av_servico', orientation= 'h', text = 'av_servico')
+    fig_media_cliente2.update_traces(texttemplate='%{text:.2f}', textposition='outside')
+    fig_media_cliente2.update_layout(
+        title = 'Top 5 clientes mais satisfeitos',
+        yaxis_title = 'Cliente',
+        xaxis_title = 'Média das avaliações',
+        yaxis = {'categoryorder':'total ascending'}
+    )
+    col4.plotly_chart(fig_media_cliente2)
+
+
+def pagina_clientes():
+    st.title('Análise de clientes')
+    
+    df_agg_vl_qtd_filtred
+
+if pagina == 'Visão Geral':
+    pagina_geral()
+elif pagina == 'Avaliações':
+    pagina_avaliacoes()
+elif pagina == 'Clientes':
+    pagina_clientes()
 
 
