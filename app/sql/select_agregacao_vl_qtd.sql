@@ -5,6 +5,7 @@ select
 	df.nm_funcionario,
 	dp.tp_pagamento,
 	ds.tp_servico,
+	fsb.av_servico,
 	sum(fsb.vl_servico) as total_vl_servico,
 	count(fsb.fact_servicos_barbearia_id) as total_servicos 
 from barber_shop.dw.fact_servicos_barbearia fsb 
@@ -18,5 +19,6 @@ group by
 	df.nm_funcionario,
 	dp.tp_pagamento,
 	ds.tp_servico,
-	fsb.dat_comp
+	fsb.dat_comp,
+	fsb.av_servico
 order by fsb.dat_servico 
