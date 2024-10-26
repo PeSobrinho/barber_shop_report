@@ -14,6 +14,34 @@ Obs.: Como foi hospedado em servições gratuitos ([Tembo](https://tembo.io/) pa
 
 Este é um projeto de portfólio que demonstra habilidades em análise de dados, visualização e desenvolvimento de dashboards interativos.
 
+## Métricas e análises
+
+- Visão geral:
+- - Total de atendimentos
+- - Total faturado
+- - Ticket médio
+- - Evolução da total de atendimentos
+- - Total de atendimentos por mês
+- - Total de atendimentos por dia da semana
+- - Total de atendimentos por dia do mês
+- - Total de atendimentos por funcionário
+- - Total de atendimentos por tipo de serviço
+- - Total de atendimentos por tipo de pagamento
+- - Top 5 clientes mais atendidos
+
+- Avaliações:
+- - Serviços avaliados
+- - Avaliação média dos estabelicimento
+- - Evolução da satisfação
+- - Avaliação média por funcionário
+- - Avaliação média por serviço
+- - Top 5 clientes mais insatisfeitos
+- - Top 5 clientes mais satisfeitos
+
+- Clientes:
+- - Novos clientes por mês
+- - Retenção de Clientes
+
 ## Tecnologias Utilizadas
 
 - Python

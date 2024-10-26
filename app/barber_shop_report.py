@@ -260,10 +260,10 @@ def pagina_avaliacoes():
     col3, col4 = st.columns(2)
 
     total_avaliacoes = df_agg_vl_qtd_filtred['av_servico'].count()
-    col0.metric('Serviços avaliados: ', f'{total_avaliacoes:,}')
+    col0.metric('Serviços avaliados ', f'{total_avaliacoes:,}')
 
     media_avaliacoes = df_agg_vl_qtd_filtred['av_servico'].mean()
-    col00.metric('Avaliação média dos estabelicimento: ', f'{media_avaliacoes:,.2f}')
+    col00.metric('Avaliação média dos estabelicimento ', f'{media_avaliacoes:,.2f}')
 
     df_media_tempo = df_agg_vl_qtd_filtred.groupby('dat_comp')['av_servico'].mean().reset_index()
     fig_media_tempo = px.line(df_media_tempo, x='dat_comp', y='av_servico', markers='o')
