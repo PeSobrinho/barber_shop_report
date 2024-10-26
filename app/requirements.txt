@@ -4,3 +4,4 @@ psycopg2
 sqlalchemy
 plotly
 python-dotenv
+matplotlib
