@@ -87,11 +87,17 @@ ordem_dias_semana_serie = pd.Series(range(len(ordem_dias_semana)), index=ordem_d
 # Dashboard
 st.set_page_config(layout='wide')
 
-st.title('Análise de atendimentos: Barbearia Ponto do Corte')
+col_logo, col_title = st.columns([1, 3])
+
+with col_logo:
+    st.image("./design/logo.png", width=250)  # Ajuste o caminho e a largura conforme necessário
+
+with col_title:
+    st.title('Análise de atendimentos: Barbearia Ponto do Corte')
 
 paginas = ['Visão Geral', 'Avaliações', 'Clientes']
 
-## Filters
+## Filters and navegation
 with st.sidebar:
 
     st.title('Navegação')
@@ -314,11 +320,64 @@ def pagina_avaliacoes():
     )
     col4.plotly_chart(fig_media_cliente2)
 
-
 def pagina_clientes():
     st.title('Análise de clientes')
+
+    col1 = st.columns(1)
+    col2 = st.columns(1)
     
-    df_agg_vl_qtd_filtred
+    df_cliente_primeiro_mes = df_agg_vl_qtd_filtred.groupby('nm_cliente')['dat_comp'].min().reset_index()
+    df_novos_clientes_por_mes = df_cliente_primeiro_mes.groupby('dat_comp')['nm_cliente'].count().reset_index()
+    fig_novos_clientes_por_mes = px.line(df_novos_clientes_por_mes, x = 'dat_comp', y = 'nm_cliente', markers='o')
+    fig_novos_clientes_por_mes.update_layout(
+        title = 'Novos clientes por mês',
+        xaxis_title = 'Competência',
+        yaxis_title = 'Novos clientes'
+    )
+    col1[0].plotly_chart(fig_novos_clientes_por_mes)
+
+    # Cohort analysis
+    # Passo 1: Identificar o primeiro mês de cada cliente
+    df_primeiro_mes = df_agg_vl_qtd_filtred.groupby('nm_cliente')['dat_comp'].min().reset_index()
+    df_primeiro_mes.columns = ['nm_cliente', 'primeiro_mes']
+
+
+    # Passo 2: Mesclar com o dataframe original
+    df_cohort = pd.merge(df_agg_vl_qtd_filtred, df_primeiro_mes, on='nm_cliente')
+
+    # Passo 3: Calcular o número de meses desde a primeira visita
+    df_cohort['meses_desde_primeira_visita'] = (
+        ((pd.to_datetime(df_cohort['dat_comp']) - pd.to_datetime(df_cohort['primeiro_mes'])
+          ).dt.days)/30).round(0)
+    
+    
+    # Passo 4: Criar a tabela de cohort
+    cohort_table = pd.pivot_table(df_cohort, 
+                                 values='nm_cliente', 
+                                index='primeiro_mes', 
+                               columns='meses_desde_primeira_visita', 
+                              aggfunc='count', 
+                             fill_value=0)
+
+    # Passo 5: Calcular as taxas de retenção
+    cohort_sizes = cohort_table.iloc[:, 0]
+    retention_table = cohort_table.divide(cohort_sizes, axis=0)
+
+    # Passo 6: Criar a tabela triangular
+    retention_table_styled = retention_table.style.format("{:.2%}")
+    retention_table_styled = retention_table_styled.background_gradient(cmap='YlOrRd')
+
+    # Exibir a tabela
+    col2[0].write('Retenção de Clientes')
+    col2[0].write('Mês de aquisição (linhas) vs. Meses desde a primeira visita (colunas)')
+    col2[0].dataframe(retention_table_styled)
+
+    col2[0].write("""
+    Esta tabela mostra a taxa de retenção de clientes ao longo do tempo. 
+    Cada linha representa um grupo de clientes que fizeram sua primeira visita em um determinado mês. 
+    As colunas mostram a porcentagem desses clientes que retornaram nos meses seguintes.
+    Por exemplo, um valor de 0.50 na coluna '2' significa que 50% dos clientes daquele grupo retornaram 2 meses após sua primeira visita.
+    """)
 
 if pagina == 'Visão Geral':
     pagina_geral()
