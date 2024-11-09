@@ -50,3 +50,6 @@ Este é um projeto de portfólio que demonstra habilidades em análise de dados,
 - Plotly (para criação de gráficos interativos)
 - Streamlit (para desenvolvimento da interface web)
 - Docker (para containerização e implantação da aplicação)
+
+## Você também pode se interessar
+- Aproveitando a base de dados que subi para este projeto, desenvolvi um chat bot usando Google Gemini para gerar consultas SQL a partir de perguntas em linguagem natural. [Confira!](https://github.com/PeSobrinho/text_to_sql/tree/main)
