@@ -17,7 +17,8 @@ database = config.database
 ssl_cert= config.ssl_cert
 schema = config.schema
 
-engine = create_engine(f'postgresql+psycopg2://{user}:{password}@{host}:{port}/{database}?sslmode=verify-full&sslrootcert={ssl_cert}')
+engine = create_engine(f'postgresql+psycopg2://{user}:{password}@{host}:{port}/{database}')
+
 
 # Data queries
 queries_paths = [
