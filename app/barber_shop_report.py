@@ -14,10 +14,10 @@ password = config.password
 host = config.host
 port = config.port
 database = config.database
-ssl_cert= config.ssl_cert
+#ssl_cert= config.ssl_cert
 schema = config.schema
 
-engine = create_engine(f'postgresql+psycopg2://{user}:{password}@{host}:{port}/{database}')
+engine = create_engine(f'postgresql+psycopg2://{user}:{password}@{host}:{port}/{database}?sslmode=require&channel_binding=require')
 
 
 # Data queries
