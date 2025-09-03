@@ -3,11 +3,11 @@ from sqlalchemy import create_engine
 import pandas as pd
 from configs import config
 
-def load_data(path, user, password, host, port, database, ssl_cert, schema):
+def load_data(path, user, password, host, port, database, schema):
 
     today = pd.Timestamp.now()
 
-    engine = create_engine(f'postgresql+psycopg2://{user}:{password}@{host}:{port}/{database}?sslmode=verify-full&sslrootcert={ssl_cert}')
+    engine = create_engine(f'postgresql+psycopg2://{user}:{password}@{host}:{port}/{database}?sslmode=require&channel_binding=require')
 
     print(f'Carregando: {path} na base {database}, schema {schema}')
     df = pd.read_csv(path)
@@ -24,8 +24,8 @@ if __name__ == '__main__':
     host = config.host
     port = config.port
     database = config.database
-    ssl_cert= config.ssl_cert
-    schema = config.schema
+    #ssl_cert= config.ssl_cert
+    schema = 'raw'
 
     path = config.data
 
@@ -36,7 +36,7 @@ if __name__ == '__main__':
         host = host, 
         port = port, 
         database = database, 
-        ssl_cert = ssl_cert, 
+        #ssl_cert = ssl_cert, 
         schema = schema)
 
     
